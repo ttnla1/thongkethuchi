@@ -1,179 +1,151 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Bảng nhập dữ liệu</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f6f0fa;
-      padding: 20px;
-    }
-
-    .form {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    input, select, button {
-      padding: 8px;
-      font-size: 14px;
-    }
-
-    button {
-      background: #8e7cc3;
-      color: white;
-      border: none;
-      cursor: pointer;
-      grid-column: span 5;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-    }
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
-    }
-
-    th {
-      background: #8e7cc3;
-      color: white;
-    }
-
-    .total {
-      margin-top: 15px;
-      font-weight: bold;
-      text-align: right;
-    }
-
-    .delete {
-      color: red;
-      cursor: pointer;
-    }
-  </style>
+  <title>Thống Kê Thu Chi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
 
-  <h2>Nhập dữ liệu</h2>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
 
-  <div class="form">
-    <input type="date" id="date">
-    
-    <select id="name">
-      <option value="">-- Tên hàng --</option>
-      <option value="Cá chạch lấu">Cá chạch lấu</option>
-      <option value="Cá rô">Cá rô</option>
-      <option value="Tôm">Tôm</option>
-    </select>
+<div class="max-w-5xl mx-auto p-6">
 
-    <input type="number" id="qty" placeholder="Số lượng" step="0.01">
-    <input type="number" id="price" placeholder="Đơn giá">
-    <input type="text" id="amount" placeholder="Thành tiền" disabled>
-
-    <button onclick="addRow()">Thêm vào bảng</button>
+  <!-- HEADER -->
+  <div class="text-center mb-8">
+    <h1 class="text-4xl font-bold text-indigo-900">Thống Kê Thu Chi</h1>
+    <p class="text-indigo-600">Quản lý và tính toán lãi lỗ mỗi ngày</p>
   </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Ngày</th>
-        <th>Tên hàng</th>
-        <th>Số lượng</th>
-        <th>Đơn giá</th>
-        <th>Thành tiền</th>
-        <th>Xóa</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody">
-      <tr id="empty">
-        <td colspan="6">Chưa có dữ liệu</td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- FORM -->
+  <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+    <form id="dataForm" class="space-y-5">
 
-  <div class="total">
-    Tổng cộng: <span id="total">0</span> đ
+      <div>
+        <label class="font-semibold">📅 Ngày</label>
+        <input type="date" id="date" class="w-full border rounded-lg p-2" required>
+      </div>
+
+      <!-- TỒN -->
+      <div class="bg-yellow-50 p-4 rounded-lg border">
+        <h3 class="font-bold mb-2">📦 Tồn hôm qua</h3>
+        <div class="grid grid-cols-2 gap-3">
+          <input id="tonKg" type="number" step="0.01" placeholder="Kg" class="border p-2 rounded">
+          <input id="tonGia" type="number" step="1" placeholder="Đơn giá" class="border p-2 rounded">
+        </div>
+        <p class="mt-2 font-semibold">Thành tiền: <span id="tonTien">0 ₫</span></p>
+      </div>
+
+      <!-- NHẬP -->
+      <div class="bg-green-50 p-4 rounded-lg border">
+        <h3 class="font-bold mb-2">📥 Nhập mới</h3>
+        <div class="grid grid-cols-2 gap-3">
+          <input id="nhapKg" type="number" step="0.01" placeholder="Kg" class="border p-2 rounded">
+          <input id="nhapGia" type="number" step="1" placeholder="Đơn giá" class="border p-2 rounded">
+        </div>
+        <p class="mt-2 font-semibold">Thành tiền: <span id="nhapTien">0 ₫</span></p>
+      </div>
+
+      <!-- BÁN -->
+      <div class="bg-blue-50 p-4 rounded-lg border">
+        <h3 class="font-bold mb-2">💰 Bán ra</h3>
+        <div class="grid grid-cols-2 gap-3">
+          <input id="banKg" type="number" step="0.01" placeholder="Kg" class="border p-2 rounded">
+          <input id="banGia" type="number" step="1" placeholder="Đơn giá" class="border p-2 rounded">
+        </div>
+        <p class="mt-2 font-semibold">Thành tiền: <span id="banTien">0 ₫</span></p>
+      </div>
+
+      <button class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700">
+        📊 Tính toán
+      </button>
+    </form>
   </div>
+
+  <!-- KẾT QUẢ -->
+  <div id="result" class="bg-white rounded-xl shadow-lg p-6 mb-6 hidden">
+    <h2 class="text-xl font-bold mb-4">📈 Kết quả</h2>
+
+    <p>🔹 Tổng kg có sẵn: <b id="tongKg"></b></p>
+    <p>🔹 Giá vốn bình quân: <b id="giaVon"></b></p>
+    <p>🔹 Vốn đã bán: <b id="vonBan"></b></p>
+    <p>🔹 Doanh thu: <b id="doanhThu"></b></p>
+
+    <p class="mt-3 text-2xl font-bold" id="laiLo"></p>
+  </div>
+
+  <!-- LỊCH SỬ -->
+  <div class="bg-white rounded-xl shadow-lg p-6">
+    <h2 class="text-xl font-bold mb-4">📋 Lịch sử</h2>
+    <div id="history" class="space-y-3 text-sm"></div>
+  </div>
+
+</div>
 
 <script>
-  const qty = document.getElementById("qty");
-  const price = document.getElementById("price");
-  const amount = document.getElementById("amount");
-  const tbody = document.getElementById("tableBody");
-  const totalEl = document.getElementById("total");
+let records = [];
 
-  // Tự tính thành tiền
-  function calcAmount() {
-    const q = parseFloat(qty.value) || 0;
-    const p = parseFloat(price.value) || 0;
-    amount.value = (q * p).toLocaleString();
-  }
+const $ = id => document.getElementById(id);
+const money = v => new Intl.NumberFormat('vi-VN').format(Math.round(v)) + ' ₫';
 
-  qty.addEventListener("input", calcAmount);
-  price.addEventListener("input", calcAmount);
+function updateTien() {
+  $('tonTien').textContent = money(($('tonKg').value || 0) * ($('tonGia').value || 0));
+  $('nhapTien').textContent = money(($('nhapKg').value || 0) * ($('nhapGia').value || 0));
+  $('banTien').textContent = money(($('banKg').value || 0) * ($('banGia').value || 0));
+}
 
-  // Thêm dòng
-  function addRow() {
-    const date = document.getElementById("date").value;
-    const name = document.getElementById("name").value;
-    const q = parseFloat(qty.value);
-    const p = parseFloat(price.value);
+['tonKg','tonGia','nhapKg','nhapGia','banKg','banGia']
+.forEach(id => $(id).addEventListener('input', updateTien));
 
-    if (!date || !name || !q || !p) {
-      alert("Vui lòng nhập đầy đủ dữ liệu");
-      return;
-    }
+$('date').valueAsDate = new Date();
 
-    const money = q * p;
+$('dataForm').addEventListener('submit', e => {
+  e.preventDefault();
 
-    if (document.getElementById("empty")) {
-      document.getElementById("empty").remove();
-    }
+  const tonKg = +$('tonKg').value || 0;
+  const tonGia = +$('tonGia').value || 0;
+  const nhapKg = +$('nhapKg').value || 0;
+  const nhapGia = +$('nhapGia').value || 0;
+  const banKg = +$('banKg').value || 0;
+  const banGia = +$('banGia').value || 0;
 
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${date}</td>
-      <td>${name}</td>
-      <td>${q}</td>
-      <td>${p.toLocaleString()}</td>
-      <td class="money">${money.toLocaleString()}</td>
-      <td class="delete" onclick="deleteRow(this)">X</td>
-    `;
+  const tonTien = tonKg * tonGia;
+  const nhapTien = nhapKg * nhapGia;
+  const doanhThu = banKg * banGia;
 
-    tbody.appendChild(tr);
-    updateTotal();
+  const tongKg = tonKg + nhapKg;
+  const giaVonBQ = tongKg ? (tonTien + nhapTien) / tongKg : 0;
+  const vonBan = banKg * giaVonBQ;
+  const laiLo = doanhThu - vonBan;
 
-    // reset form
-    qty.value = "";
-    price.value = "";
-    amount.value = "";
-  }
+  records.push({
+    id: Date.now(),
+    date: $('date').value,
+    laiLo
+  });
 
-  // Xóa dòng
-  function deleteRow(el) {
-    el.parentElement.remove();
-    updateTotal();
+  $('result').classList.remove('hidden');
+  $('tongKg').textContent = tongKg.toFixed(2) + ' kg';
+  $('giaVon').textContent = money(giaVonBQ) + '/kg';
+  $('vonBan').textContent = money(vonBan);
+  $('doanhThu').textContent = money(doanhThu);
 
-    if (tbody.children.length === 0) {
-      tbody.innerHTML = `<tr id="empty"><td colspan="6">Chưa có dữ liệu</td></tr>`;
-    }
-  }
+  $('laiLo').textContent = (laiLo >= 0 ? '✅ Lãi: ' : '❌ Lỗ: ') + money(Math.abs(laiLo));
+  $('laiLo').className = laiLo >= 0 ? 'text-green-600 text-2xl font-bold' : 'text-red-600 text-2xl font-bold';
 
-  // Tính tổng
-  function updateTotal() {
-    let sum = 0;
-    document.querySelectorAll(".money").forEach(td => {
-      sum += Number(td.textContent.replace(/,/g, ""));
-    });
-    totalEl.textContent = sum.toLocaleString();
-  }
+  renderHistory();
+});
+
+function renderHistory() {
+  $('history').innerHTML = records.map(r => `
+    <div class="border p-3 rounded flex justify-between">
+      <span>📅 ${r.date}</span>
+      <span class="${r.laiLo>=0?'text-green-600':'text-red-600'} font-bold">
+        ${money(Math.abs(r.laiLo))}
+      </span>
+    </div>
+  `).join('');
+}
 </script>
 
 </body>
