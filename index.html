@@ -11,11 +11,13 @@
 
 <div class="max-w-5xl mx-auto p-6">
 
+  <!-- HEADER -->
   <div class="text-center mb-8">
     <h1 class="text-4xl font-bold text-indigo-900">Thống Kê Thu Chi</h1>
-    <p class="text-indigo-600">Tự động lưu & ghi nhớ dữ liệu</p>
+    <p class="text-indigo-600">Tự động lưu – Có thể xóa – Không mất dữ liệu</p>
   </div>
 
+  <!-- FORM -->
   <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
     <form id="dataForm" class="space-y-5">
 
@@ -24,6 +26,7 @@
         <input type="date" id="date" class="w-full border rounded-lg p-2" required>
       </div>
 
+      <!-- TỒN -->
       <div class="bg-yellow-50 p-4 rounded-lg border">
         <h3 class="font-bold mb-2">📦 Tồn hôm qua</h3>
         <div class="grid grid-cols-2 gap-3">
@@ -33,6 +36,7 @@
         <p class="mt-2 font-semibold">Thành tiền: <span id="tonTien">0 ₫</span></p>
       </div>
 
+      <!-- NHẬP -->
       <div class="bg-green-50 p-4 rounded-lg border">
         <h3 class="font-bold mb-2">📥 Nhập mới</h3>
         <div class="grid grid-cols-2 gap-3">
@@ -42,6 +46,7 @@
         <p class="mt-2 font-semibold">Thành tiền: <span id="nhapTien">0 ₫</span></p>
       </div>
 
+      <!-- BÁN -->
       <div class="bg-blue-50 p-4 rounded-lg border">
         <h3 class="font-bold mb-2">💰 Bán ra</h3>
         <div class="grid grid-cols-2 gap-3">
@@ -54,9 +59,12 @@
       <button class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700">
         📊 Tính toán & Lưu
       </button>
+
+      <p id="saveStatus" class="text-sm text-center text-gray-500"></p>
     </form>
   </div>
 
+  <!-- RESULT -->
   <div id="result" class="bg-white rounded-xl shadow-lg p-6 mb-6 hidden">
     <h2 class="text-xl font-bold mb-4">📈 Kết quả</h2>
     <p>🔹 Tổng kg: <b id="tongKg"></b></p>
@@ -65,15 +73,25 @@
     <p class="mt-3 text-2xl font-bold" id="laiLo"></p>
   </div>
 
+  <!-- HISTORY -->
   <div class="bg-white rounded-xl shadow-lg p-6">
-    <h2 class="text-xl font-bold mb-4">📋 Lịch sử (Tự động lưu)</h2>
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold">📋 Lịch sử</h2>
+      <button
+        onclick="clearAll()"
+        class="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+      >
+        ❌ Xóa tất cả
+      </button>
+    </div>
+
     <div id="history" class="space-y-3 text-sm"></div>
   </div>
 
 </div>
 
 <script>
-/* ---------- IndexedDB ---------- */
+/* ========= IndexedDB ========= */
 let db;
 let records = [];
 const DB_NAME = 'ThuChiDB';
@@ -99,6 +117,8 @@ function initDB() {
 function saveRecord(record) {
   const tx = db.transaction(STORE, 'readwrite');
   tx.objectStore(STORE).put(record);
+  $('saveStatus').textContent =
+    '💾 Đã lưu lúc ' + new Date().toLocaleTimeString('vi-VN');
 }
 
 function loadRecords() {
@@ -110,7 +130,22 @@ function loadRecords() {
   };
 }
 
-/* ---------- Logic ---------- */
+function deleteRecord(id) {
+  const tx = db.transaction(STORE, 'readwrite');
+  tx.objectStore(STORE).delete(id);
+  records = records.filter(r => r.id !== id);
+  renderHistory();
+}
+
+function clearAll() {
+  if (!confirm('Bạn có chắc muốn xóa toàn bộ dữ liệu không?')) return;
+  const tx = db.transaction(STORE, 'readwrite');
+  tx.objectStore(STORE).clear();
+  records = [];
+  renderHistory();
+}
+
+/* ========= Logic ========= */
 function updateTien() {
   $('tonTien').textContent = money(($('tonKg').value || 0) * ($('tonGia').value || 0));
   $('nhapTien').textContent = money(($('nhapKg').value || 0) * ($('nhapGia').value || 0));
@@ -150,8 +185,10 @@ $('dataForm').addEventListener('submit', e => {
   $('tongKg').textContent = tongKg.toFixed(2) + ' kg';
   $('giaVon').textContent = money(giaVon) + '/kg';
   $('doanhThu').textContent = money(doanhThu);
-  $('laiLo').textContent = (laiLo >= 0 ? '✅ Lãi ' : '❌ Lỗ ') + money(Math.abs(laiLo));
-  $('laiLo').className = laiLo >= 0 ? 'text-green-600 text-2xl font-bold' : 'text-red-600 text-2xl font-bold';
+  $('laiLo').textContent =
+    (laiLo >= 0 ? '✅ Lãi ' : '❌ Lỗ ') + money(Math.abs(laiLo));
+  $('laiLo').className =
+    laiLo >= 0 ? 'text-green-600 text-2xl font-bold' : 'text-red-600 text-2xl font-bold';
 
   renderHistory();
 });
@@ -160,11 +197,15 @@ function renderHistory() {
   $('history').innerHTML = records
     .sort((a,b)=>b.id-a.id)
     .map(r => `
-      <div class="border p-3 rounded flex justify-between">
+      <div class="border p-3 rounded flex justify-between items-center">
         <span>📅 ${r.date}</span>
-        <span class="${r.laiLo>=0?'text-green-600':'text-red-600'} font-bold">
-          ${money(Math.abs(r.laiLo))}
-        </span>
+        <div class="flex items-center gap-3">
+          <span class="${r.laiLo>=0?'text-green-600':'text-red-600'} font-bold">
+            ${money(Math.abs(r.laiLo))}
+          </span>
+          <button onclick="deleteRecord(${r.id})"
+            class="text-red-500 hover:text-red-700 font-bold">🗑️</button>
+        </div>
       </div>
     `).join('');
 }
